@@ -1,20 +1,44 @@
-import React, { useState } from 'react';
+import axios from 'axios';
+import React, { useState, useEffect } from "react";
 
 const App = (props) => {
-  const [counter, setCounter] = useState(0);
+  //define the state and the setter
+  const [APIlist, setAPIlist] = useState();
 
-  let incrementCounter = () => {
-    setCounter(pre => pre + 1);
-  }
-  const { color, size } = props;
-  let colorStyle = { color, fontSize: size }
+  //On load invoke method to genrate list
+  useEffect(() => {
+    let url = "https://api.publicapis.org/entries?category=Animals";
+    axios({
+      method: 'get',
+      url: url,
+      responseType: 'json'
+    }).then(resp => {
+      let listOfEntries = resp.data.entries;
+      let listOfEntriesAsArray = Object.entries(listOfEntries);
+      let i = 1;
+      let entryDetails = listOfEntriesAsArray.map((entryDetail) => {
+        return (
+          <li key={i++}>
+            <a href={entryDetail[1]["Link"]} target="_blank" rel="noreferrer">{entryDetail[1]["API"]}</a>
+          </li>
+        )
+      })
+      setAPIlist(entryDetails);
+    })
+      .catch(err => {
+        console.log(err.toString())
+      });
+  }, []);
+
+  const { color, size: fontSize } = props;
+  const colorStyle = { color, fontSize };
+
   return (
-    <div style={colorStyle}>
-      React Component
-      <br /><br />
-      <button onClick={incrementCounter}>Click Me!</button>
-      <br /><br />
-      {counter}
+    <div>
+      <h2>APIs List</h2>
+      <br />
+
+      <div style={colorStyle}><ul>{APIlist}</ul></div>
     </div>
   );
 }
